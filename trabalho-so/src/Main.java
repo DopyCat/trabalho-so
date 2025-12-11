@@ -105,4 +105,40 @@ public class Main {
         return new SimulationResult("RAND", 0, pageFaults, formatSwapState(swapState));
     }
 
+    // =========================================================
+    // LRU
+    // =========================================================
+    public static SimulationResult simularLRU(int N_frames, List<Integer> requisicoes, int P) {
+        LinkedHashSet<Integer> memoriaFisica = new LinkedHashSet<>(N_frames);
+        long pageFaults = 0;
+
+        Set<Integer> swapState = new HashSet<>();
+
+        for (int paginaRequisitada : requisicoes) {
+
+            swapState.remove(paginaRequisitada);
+
+            if (memoriaFisica.contains(paginaRequisitada)) {
+                // HIT: move para o final (MRU)
+                memoriaFisica.remove(paginaRequisitada);
+                memoriaFisica.add(paginaRequisitada);
+            } else {
+                // FAULT
+                pageFaults++;
+
+                if (memoriaFisica.size() == N_frames) {
+                    // Remove LRU (primeira do LinkedHashSet)
+                    int paginaASubstituir = memoriaFisica.iterator().next();
+                    memoriaFisica.remove(paginaASubstituir);
+                    swapState.add(paginaASubstituir);
+                }
+
+                memoriaFisica.add(paginaRequisitada);
+            }
+        }
+
+        return new SimulationResult("LRU", 0, pageFaults, formatSwapState(swapState));
+    }
+
+
 }
