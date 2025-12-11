@@ -29,7 +29,8 @@ public class Main {
         return params;
     }
 
-    // =========================================================
+
+     // =========================================================
     // FIFO
     // =========================================================
 
@@ -38,27 +39,35 @@ public class Main {
         Queue<Integer> filaFIFO = new LinkedList<>();
         long pageFaults = 0;
 
+        // Swap inicia vazio (só páginas expulsas e que não voltam)
         Set<Integer> swapState = new HashSet<>();
 
         for (int paginaRequisitada : requisicoes) {
 
+            // Caso a página esteja no swap e volte a ser colocada na memória → remover do swap
             swapState.remove(paginaRequisitada);
 
             if (memoriaFisica.contains(paginaRequisitada)) {
+                // HIT — nada a expulsar
                 continue;
             }
 
+            // PAGE FAULT
             pageFaults++;
 
             if (memoriaFisica.size() < N_frames) {
+                // Cabe na memória
                 memoriaFisica.add(paginaRequisitada);
                 filaFIFO.offer(paginaRequisitada);
             } else {
+                // Substituição FIFO
                 int paginaASubstituir = filaFIFO.poll();
                 memoriaFisica.remove(paginaASubstituir);
 
+                // Página expulsa vai para o swap
                 swapState.add(paginaASubstituir);
 
+                // Insere página nova
                 memoriaFisica.add(paginaRequisitada);
                 filaFIFO.offer(paginaRequisitada);
             }
@@ -67,7 +76,7 @@ public class Main {
         return new SimulationResult("FIFO", 0, pageFaults, formatSwapState(swapState));
     }
 
-    // =========================================================
+     // =========================================================
     // RAND
     // =========================================================
     public static SimulationResult simularRAND(int N_frames, List<Integer> requisicoes, int P) {
@@ -105,7 +114,7 @@ public class Main {
         return new SimulationResult("RAND", 0, pageFaults, formatSwapState(swapState));
     }
 
-    // =========================================================
+      // =========================================================
     // LRU
     // =========================================================
     public static SimulationResult simularLRU(int N_frames, List<Integer> requisicoes, int P) {
@@ -140,7 +149,7 @@ public class Main {
         return new SimulationResult("LRU", 0, pageFaults, formatSwapState(swapState));
     }
 
-    // =========================================================
+      // =========================================================
     // MIN
     // =========================================================
     public static SimulationResult simularMIN(int N_frames, List<Integer> requisicoes, int P) {
@@ -228,7 +237,7 @@ public class Main {
         long tamanhoSwapMinimo;
     }
 
-        // =========================================================
+    // =========================================================
     // MAIN 
     // =========================================================
 
@@ -308,4 +317,3 @@ public class Main {
         }
     }
 }
-
