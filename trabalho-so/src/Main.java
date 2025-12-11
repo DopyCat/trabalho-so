@@ -29,7 +29,7 @@ public class Main {
         return params;
     }
 
-     // =========================================================
+    // =========================================================
     // FIFO
     // =========================================================
 
@@ -140,8 +140,7 @@ public class Main {
         return new SimulationResult("LRU", 0, pageFaults, formatSwapState(swapState));
     }
 
-    
-          // =========================================================
+    // =========================================================
     // MIN
     // =========================================================
     public static SimulationResult simularMIN(int N_frames, List<Integer> requisicoes, int P) {
@@ -207,6 +206,26 @@ public class Main {
                 .sorted()
                 .map(String::valueOf)
                 .collect(Collectors.joining(" "));
+    }
+
+    static class SimulationResult {
+        String politica;
+        long tempoDecorrido;
+        long pageFaults;
+        String swapState;
+
+        public SimulationResult(String politica, long tempoDecorrido, long pageFaults, String swapState) {
+            this.politica = politica;
+            this.tempoDecorrido = tempoDecorrido;
+            this.pageFaults = pageFaults;
+            this.swapState = swapState;
+        }
+    }
+
+    static class DerivedParameters {
+        int tamanhoPagina;
+        int numFrames;
+        long tamanhoSwapMinimo;
     }
 
 }
