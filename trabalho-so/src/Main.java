@@ -140,5 +140,73 @@ public class Main {
         return new SimulationResult("LRU", 0, pageFaults, formatSwapState(swapState));
     }
 
+    
+          // =========================================================
+    // MIN
+    // =========================================================
+    public static SimulationResult simularMIN(int N_frames, List<Integer> requisicoes, int P) {
+        Set<Integer> memoriaFisica = new HashSet<>();
+        long pageFaults = 0;
+
+        Set<Integer> swapState = new HashSet<>();
+
+        for (int i = 0; i < requisicoes.size(); i++) {
+
+            int paginaRequisitada = requisicoes.get(i);
+
+            swapState.remove(paginaRequisitada);
+
+            if (memoriaFisica.contains(paginaRequisitada)) {
+                continue; // hit
+            }
+
+            pageFaults++;
+
+            if (memoriaFisica.size() < N_frames) {
+                memoriaFisica.add(paginaRequisitada);
+            } else {
+                int paginaASubstituir = -1;
+                int maiorDistancia = -1;
+
+                for (int paginaNaMemoria : memoriaFisica) {
+                    int distancia = getDistancia(paginaNaMemoria, requisicoes, i + 1);
+
+                    if (distancia > maiorDistancia) {
+                        maiorDistancia = distancia;
+                        paginaASubstituir = paginaNaMemoria;
+                    } else if (distancia == maiorDistancia && paginaNaMemoria > paginaASubstituir) {
+                        // desempate
+                        paginaASubstituir = paginaNaMemoria;
+                    }
+                }
+
+                memoriaFisica.remove(paginaASubstituir);
+                swapState.add(paginaASubstituir);
+
+                memoriaFisica.add(paginaRequisitada);
+            }
+        }
+
+        return new SimulationResult("MIN", 0, pageFaults, formatSwapState(swapState));
+    }
+
+    // =========================================================
+    // FUNÇÕES AUXILIARES
+    // =========================================================
+
+    private static int getDistancia(int page, List<Integer> requisicoes, int start) {
+        for (int j = start; j < requisicoes.size(); j++) {
+            if (requisicoes.get(j).equals(page))
+                return j;
+        }
+        return Integer.MAX_VALUE;
+    }
+
+    private static String formatSwapState(Set<Integer> swapState) {
+        return swapState.stream()
+                .sorted()
+                .map(String::valueOf)
+                .collect(Collectors.joining(" "));
+    }
 
 }
