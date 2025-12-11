@@ -28,4 +28,42 @@ public class Main {
 
         return params;
     }
+
+     // =========================================================
+    // FIFO
+    // =========================================================
+
+    public static SimulationResult simularFIFO(int N_frames, List<Integer> requisicoes, int P) {
+        Set<Integer> memoriaFisica = new HashSet<>();
+        Queue<Integer> filaFIFO = new LinkedList<>();
+        long pageFaults = 0;
+
+        Set<Integer> swapState = new HashSet<>();
+
+        for (int paginaRequisitada : requisicoes) {
+
+            swapState.remove(paginaRequisitada);
+
+            if (memoriaFisica.contains(paginaRequisitada)) {
+                continue;
+            }
+
+            pageFaults++;
+
+            if (memoriaFisica.size() < N_frames) {
+                memoriaFisica.add(paginaRequisitada);
+                filaFIFO.offer(paginaRequisitada);
+            } else {
+                int paginaASubstituir = filaFIFO.poll();
+                memoriaFisica.remove(paginaASubstituir);
+
+                swapState.add(paginaASubstituir);
+
+                memoriaFisica.add(paginaRequisitada);
+                filaFIFO.offer(paginaRequisitada);
+            }
+        }
+
+        return new SimulationResult("FIFO", 0, pageFaults, formatSwapState(swapState));
+    }
 }
