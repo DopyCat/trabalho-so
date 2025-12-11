@@ -66,4 +66,43 @@ public class Main {
 
         return new SimulationResult("FIFO", 0, pageFaults, formatSwapState(swapState));
     }
+
+    // =========================================================
+    // RAND
+    // =========================================================
+    public static SimulationResult simularRAND(int N_frames, List<Integer> requisicoes, int P) {
+        Set<Integer> memoriaFisica = new HashSet<>();
+        long pageFaults = 0;
+
+        Set<Integer> swapState = new HashSet<>();
+        Random rand = new Random();
+
+        for (int paginaRequisitada : requisicoes) {
+
+            swapState.remove(paginaRequisitada);
+
+            if (memoriaFisica.contains(paginaRequisitada)) {
+                continue; // hit
+            }
+
+            pageFaults++;
+
+            if (memoriaFisica.size() < N_frames) {
+                memoriaFisica.add(paginaRequisitada);
+            } else {
+                // Escolhe página aleatória para substituir
+                List<Integer> frames = new ArrayList<>(memoriaFisica);
+                int indiceAleatorio = rand.nextInt(frames.size());
+                int paginaASubstituir = frames.get(indiceAleatorio);
+
+                memoriaFisica.remove(paginaASubstituir);
+                swapState.add(paginaASubstituir);
+
+                memoriaFisica.add(paginaRequisitada);
+            }
+        }
+
+        return new SimulationResult("RAND", 0, pageFaults, formatSwapState(swapState));
+    }
+
 }
