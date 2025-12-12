@@ -415,7 +415,9 @@ public class Main {
         System.out.println(params.tamanhoPagina);
         System.out.println(params.numFrames);
         System.out.println(params.tamanhoSwapMinimo);
+        System.out.println();
         System.out.println(N);
+        System.out.println();
 
         for (List<Integer> requisicoes : todasAsSequencias) {
 
@@ -447,6 +449,8 @@ public class Main {
             System.out.println(rMIN.tempoDecorrido);
             System.out.println(rMIN.pageFaults);
             System.out.println(rMIN.swapState);
+
+            System.out.println();
         }
     }
 }
