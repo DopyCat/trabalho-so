@@ -1,18 +1,47 @@
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Simulador de políticas de substituição de páginas (FIFO, RAND, LRU, MIN).
+ *
+ * O programa lê parâmetros de memória e sequências de requisições a partir da
+ * entrada padrão e executa simulações para cada política, imprimindo
+ * estatísticas como tempo decorrido, número de page faults e o estado do swap.
+ *
+ * Observação: apenas documentação adicionada — nenhuma alteração na lógica.
+ */
 public class Main {
 
     // =========================================================
     // PARÂMETROS DERIVADOS
     // =========================================================
 
+    /**
+     * Calcula o tamanho (em bytes) de cada página dividindo o espaço virtual
+     * total `V` pelo número de páginas `P`.
+     *
+     * @param V espaço virtual total (bytes)
+     * @param P número de páginas virtuais
+     * @return tamanho da página em bytes; 0 se `P == 0`
+     */
     private static int inferirTamanhoDaPagina(int V, int P) {
         if (P == 0)
             return 0;
         return V / P;
     }
 
+    /**
+     * Calcula parâmetros derivados a partir dos valores básicos de memória.
+     *
+     * - `tamanhoPagina`: inferido por `inferirTamanhoDaPagina`
+     * - `numFrames`: número de frames de memória física disponíveis (M / tamanhoPagina)
+     * - `tamanhoSwapMinimo`: tamanho mínimo necessário de swap (V - M, não-negativo)
+     *
+     * @param M memória física disponível (bytes)
+     * @param V espaço virtual total (bytes)
+     * @param P número de páginas virtuais
+     * @return objeto `DerivedParameters` preenchido
+     */
     private static DerivedParameters calcularParametrosDerivados(int M, int V, int P) {
         DerivedParameters params = new DerivedParameters();
         params.tamanhoPagina = inferirTamanhoDaPagina(V, P);
@@ -29,6 +58,14 @@ public class Main {
     // FIFO
     // =========================================================
 
+    /**
+     * Simula a política FIFO (first-in, first-out).
+     *
+     * @param N_frames número de frames disponíveis na memória física
+     * @param requisicoes sequência de páginas requisitadas
+     * @param P parâmetro de páginas virtuais (não usado diretamente na política)
+     * @return `SimulationResult` contendo nome da política, tempo (ms), page faults e estado do swap
+     */
     public static SimulationResult simularFIFO(int N_frames, List<Integer> requisicoes, int P) {
 
         long inicio = System.nanoTime();  // <<--- TEMPO COMEÇA
@@ -73,6 +110,14 @@ public class Main {
     // RAND
     // =========================================================
 
+    /**
+     * Simula a política RAND (substitui um frame aleatório quando necessário).
+     *
+     * @param N_frames número de frames disponíveis
+     * @param requisicoes sequência de páginas requisitadas
+     * @param P parâmetro de páginas virtuais (não usado pela política)
+     * @return `SimulationResult` com estatísticas da simulação
+     */
     public static SimulationResult simularRAND(int N_frames, List<Integer> requisicoes, int P) {
 
         long inicio = System.nanoTime(); // <<---
@@ -117,6 +162,15 @@ public class Main {
     // LRU
     // =========================================================
 
+    /**
+     * Simula a política LRU (least recently used) utilizando um `LinkedHashSet`
+     * para manter a ordem de uso.
+     *
+     * @param N_frames número de frames disponíveis
+     * @param requisicoes sequência de páginas requisitadas
+     * @param P parâmetro de páginas virtuais (não usado diretamente pela política)
+     * @return `SimulationResult` com estatísticas da simulação
+     */
     public static SimulationResult simularLRU(int N_frames, List<Integer> requisicoes, int P) {
 
         long inicio = System.nanoTime(); // <<---
@@ -157,6 +211,18 @@ public class Main {
     // MIN
     // =========================================================
 
+    /**
+     * Simula a política MIN (ótima), que substitui a página cujo próximo acesso
+     * está mais distante no futuro (ou não ocorre mais).
+     *
+     * Esta implementação calcula a distância até o próximo acesso para cada
+     * página residente e seleciona a maior distância.
+     *
+     * @param N_frames número de frames disponíveis
+     * @param requisicoes sequência de páginas requisitadas
+     * @param P parâmetro de páginas virtuais (não usado diretamente pela política)
+     * @return `SimulationResult` com estatísticas da simulação
+     */
     public static SimulationResult simularMIN(int N_frames, List<Integer> requisicoes, int P) {
 
         long inicio = System.nanoTime(); // <<---
@@ -212,6 +278,17 @@ public class Main {
     // FUNÇÕES AUXILIARES
     // =========================================================
 
+
+    /**
+     * Retorna a posição (índice) do próximo acesso à `page` a partir do índice
+     * `start` na lista de requisições. Se a página não for encontrada, retorna
+     * `Integer.MAX_VALUE` para indicar que não será acessada novamente.
+     *
+     * @param page página a procurar
+     * @param requisicoes lista de requisições
+     * @param start índice de início da busca
+     * @return índice do próximo acesso ou `Integer.MAX_VALUE` se não houver mais acessos
+     */
     private static int getDistancia(int page, List<Integer> requisicoes, int start) {
         for (int j = start; j < requisicoes.size(); j++) {
             if (requisicoes.get(j).equals(page))
@@ -220,6 +297,13 @@ public class Main {
         return Integer.MAX_VALUE;
     }
 
+    /**
+     * Formata o estado do swap (conjunto de páginas atualmente no swap) em uma
+     * string com números separados por espaço, ordenados.
+     *
+     * @param swapState conjunto de páginas no swap
+     * @return string representando o estado do swap
+     */
     private static String formatSwapState(Set<Integer> swapState) {
         return swapState.stream()
                 .sorted()
@@ -231,6 +315,11 @@ public class Main {
     // CLASSES AUXILIARES
     // =========================================================
 
+    /**
+     * Resultado de uma simulação para uma política específica.
+     * Contém: nome da política, tempo decorrido (ms), número de page faults
+     * e representação do estado do swap.
+     */
     static class SimulationResult {
         String politica;
         long tempoDecorrido;
@@ -245,6 +334,10 @@ public class Main {
         }
     }
 
+    /**
+     * Estrutura para armazenar parâmetros derivados (tamanho de página,
+     * número de frames e tamanho mínimo de swap).
+     */
     static class DerivedParameters {
         int tamanhoPagina;
         int numFrames;
@@ -255,6 +348,16 @@ public class Main {
     // MAIN
     // =========================================================
 
+    /**
+     * Ponto de entrada do programa. Lê os parâmetros de memória e N
+     * sequências de requisições da entrada padrão, calcula parâmetros
+     * derivados e imprime os resultados das simulações para cada sequência.
+     *
+     * A leitura é organizada conforme o enunciado do trabalho; este método
+     * delega a impressão final para `imprimirSaida`.
+     *
+     * @param args argumentos de linha de comando (não utilizados)
+     */
     public static void main(String[] args) {
 
         Scanner scanner = new Scanner(System.in);
@@ -296,6 +399,17 @@ public class Main {
         scanner.close();
     }
 
+
+    /**
+     * Imprime os parâmetros derivados e, para cada sequência de requisições,
+     * imprime a sequência seguida das estatísticas das simulações (FIFO, RAND,
+     * LRU, MIN).
+     *
+     * @param params parâmetros derivados calculados a partir de M, V e P
+     * @param N número de sequências
+     * @param todasAsSequencias lista com cada sequência de requisições
+     * @param P parâmetro de páginas virtuais (propagado para simulações)
+     */
     private static void imprimirSaida(DerivedParameters params, int N, List<List<Integer>> todasAsSequencias, int P) {
 
         System.out.println(params.tamanhoPagina);
